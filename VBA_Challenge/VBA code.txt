@@ -1,0 +1,141 @@
+Sub inserting_ticker_Column()
+Dim ws As Worksheet
+For Each ws In ThisWorkbook.Worksheets
+    ws.Activate
+    Dim LastRow As Double
+    LastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    Dim Ticker_Code As String
+    Dim Ticker_Code_Count As Double
+    Ticker_Code_Count = 0
+    Dim summary_table_row As Integer
+    summary_table_row = 2
+    Dim Stock_Total_Volume As Double
+    Stock_Total_Volume = 0
+    'Stock CLosing Price and opening price
+    Dim Stock_Closing_Price As Double
+    Stock_Closing_Price = 0
+    Dim Stock_Opening_Price As Double
+    Stock_Opening_Price = 0
+    'Dim Price Change
+    Dim Price_Change As Double
+    Price_Change = 0
+    Dim Percentage_Change As Double
+    Percentage_Change = 0
+    Dim Row_CNT As Integer
+    Row_CNT = 0
+    For I = 2 To LastRow
+        If Cells(I + 1, 1).Value <> Cells(I, 1).Value Then
+            Ticker_Code = Cells(I, 1).Value
+            Stock_Total_Volume = Stock_Total_Volume + Cells(I, 7).Value
+            Stock_Closing_Price = Stock_Closing_Price + Cells(I, 6).Value
+            'Bit of a dodgy method to find first value, 261 not dynamic
+            Stock_Opening_Price = Cells(I - Row_CNT, 3).Value
+            Range("J" & summary_table_row).Value = Ticker_Code
+            
+            'Inserting stock price into table
+            'Range("K" & summary_table_row).Value = Stock_Opening_Price
+            'Range("L" & summary_table_row).Value = Stock_Closing_Price
+            ' price change
+            Price_Change = Stock_Closing_Price - Stock_Opening_Price
+            Range("K" & summary_table_row).Value = Price_Change
+            'Stock_Total_Volume = 0
+            'Percentage change
+            If Stock_Opening_Price = 0 Then
+                Percentage_Change = 0
+            Else
+                Percentage_Change = ((Price_Change / Stock_Opening_Price) * 100)
+            End If
+            Range("L" & summary_table_row).Value = Percentage_Change
+            Range("M" & summary_table_row).Value = Stock_Total_Volume
+            summary_table_row = summary_table_row + 1
+            Stock_Total_Volume = 0
+            Row_CNT = 0
+            Stock_Closing_Price = 0
+            Stock_Opening_Price = 0
+        Else
+            Row_CNT = Row_CNT + 1
+            'adding to stock total
+            Stock_Total_Volume = Stock_Total_Volume + Cells(I, 7).Value
+        End If
+    Next I
+    Range("J1") = "Ticker Code"
+    Range("K1") = "Yearly Change"
+    Range("L1") = "Percentage Change"
+    Range("M1") = "Total stock"
+    
+Next ws
+End Sub
+
+
+Sub conditionalformating()
+
+Dim ws As Worksheet
+Dim grt_per_incr As Double
+grt_per_incr = 0
+Dim grt_per_dec As Double
+grt_per_dec = 0
+Dim grt_total_vol As Double
+grt_total_vol = 0
+Dim Ticker_Code_inc As String
+Dim Ticker_Code_dec As String
+
+Dim grt_Total_Volume As Double
+    grt_Total_Volume = 0
+
+
+For Each ws In ThisWorkbook.Worksheets
+    ws.Activate
+    Dim LastRow As Double
+    LastRow = ws.Cells(Rows.Count, 11).End(xlUp).Row
+    
+    For I = 2 To LastRow
+        If Cells(I, 11).Value < 0 Then
+            Cells(I, 11).Interior.ColorIndex = 3
+        Else
+            Cells(I, 11).Interior.ColorIndex = 4
+        End If
+    Next I
+    
+    
+    For J = 2 To LastRow
+        If Cells(J, 12).Value > grt_per_incr Then
+            grt_per_incr = Cells(J, 12).Value
+            Ticker_Code_inc = Cells(J, 10).Value
+        End If
+        Range("P2") = Ticker_Code_inc
+        Range("Q2") = grt_per_incr
+    Next J
+    grt_per_incr = 0
+    
+    
+    For K = 2 To LastRow
+        If Cells(K, 12).Value < grt_per_dec Then
+            grt_per_dec = Cells(K, 12).Value
+            Ticker_Code_dec = Cells(K, 10).Value
+        End If
+            
+        Range("P3") = Ticker_Code_dec
+        Range("Q3") = grt_per_dec
+        
+    Next K
+    
+    grt_per_dec = 0
+    
+    For L = 2 To LastRow
+        If Cells(L, 13).Value > grt_Total_Volume Then
+            grt_Total_Volume = Cells(L, 13).Value
+            Ticker_Code_inc = Cells(L, 10).Value
+        End If
+        Range("P4") = Ticker_Code_inc
+        Range("Q4") = grt_Total_Volume
+    Next L
+    grt_Total_Volume = 0
+    
+    
+    Range("O2") = "Greatest % Increase"
+    Range("O3") = "Greatest % Decrease"
+    Range("O4") = "Greatest Total Volume"
+    
+      
+Next ws
+End Sub
